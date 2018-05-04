@@ -40,25 +40,51 @@ defmodule ElxMarketTest do
   end
 
   test "3 for 2: simeplest" do
-    assert ElxMarket.three_for_two(
-             "shampoo",
-             [
-               {"soap", 1.5},
-               {"shampoo", 2.0},
-               {"shampoo", 2.0},
-               {"toothpaste", 0.8},
-               {"shampoo", 2.0},
-               {"soap", 1.5}
-             ],
-             []
-           ) ==
-             {[
+    priced_basket = [
+      {"soap", 1.5},
+      {"shampoo", 2.0},
+      {"shampoo", 2.0},
+      {"toothpaste", 0.8},
+      {"shampoo", 2.0},
+      {"soap", 1.5}
+    ]
+    
+    {full_price_items, discounted_items} = ElxMarket.three_for_two("shampoo", priced_basket, [])
+    assert sort(full_price_items) ==
+             sort([
                 {"soap", 1.5},
                 {"toothpaste", 0.8},
                 {"soap", 1.5}
-              ],
-              [
-                {[{"shampoo", 2.0}, {"shampoo", 2.0}, {"shampoo", 2.0}], 2.0, 4.0}
-              ]}
+              ])
+    assert discounted_items == [{[{"shampoo", 2.0}, {"shampoo", 2.0}, {"shampoo", 2.0}], 2.0, 4.0}]
+  end
+
+  test "3 for 2: one and a bit matches" do
+    priced_basket = [
+      {"shampoo", 2.0},
+      {"soap", 1.5},
+      {"shampoo", 2.0},
+      {"shampoo", 2.0},
+      {"toothpaste", 0.8},
+      {"shampoo", 2.0},
+      {"soap", 1.5},
+      {"shampoo", 2.0}
+    ]
+
+    {full_price_items, discounted_items} = ElxMarket.three_for_two("shampoo", priced_basket, [])
+
+    assert sort(full_price_items) ==
+             sort([
+               {"soap", 1.5},
+               {"toothpaste", 0.8},
+               {"shampoo", 2.0},
+               {"shampoo", 2.0},
+               {"soap", 1.5}
+             ])
+
+    assert discounted_items ==
+             [
+               {[{"shampoo", 2.0}, {"shampoo", 2.0}, {"shampoo", 2.0}], 2.0, 4.0}
+             ]
   end
 end
