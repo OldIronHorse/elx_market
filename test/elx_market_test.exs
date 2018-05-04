@@ -16,7 +16,36 @@ defmodule ElxMarketTest do
              ]
   end
 
+  test "make receipt: no discounts" do
+    prices = %{"soap" => 1.5, "shampoo" => 2.0, "toothpaste" => 0.8, "bannana" => 0.8}
+
+    basket = [
+      "soap",
+      "shampoo",
+      "shampoo",
+      "toothpaste",
+      "shampoo",
+      "soap"
+    ]
+
+    receipt = Receipt.make(basket, prices, [])
+
+    assert receipt == %Receipt{
+             items: [
+               %PricedItem{name: "soap", price: 1.5},
+               %PricedItem{name: "shampoo", price: 2.0},
+               %PricedItem{name: "shampoo", price: 2.0},
+               %PricedItem{name: "toothpaste", price: 0.8},
+               %PricedItem{name: "shampoo", price: 2.0},
+               %PricedItem{name: "soap", price: 1.5}
+             ],
+             saving: 0,
+             total: 9.8
+           }
+  end
+
   # TODO: make receipt
+  # TODO: make receipt string
 
   test "3 for 2: not triggered, no triplet" do
     assert ElxMarket.three_for_two(

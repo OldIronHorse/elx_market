@@ -8,6 +8,21 @@ defmodule DiscountedItem do
   defstruct [:items, :saving, :price]
 end
 
+defmodule Receipt do
+  @enforce_keys [:items, :saving, :total]
+  defstruct [:items, :saving, :total]
+
+  def make(basket, prices, _rules) do
+    priced_basket = ElxMarket.price_basket(basket, prices)
+
+    %Receipt{
+      items: priced_basket,
+      saving: 0,
+      total: Enum.reduce(priced_basket, 0, fn item, total -> total + item.price end)
+    }
+  end
+end
+
 defmodule ElxMarket do
   @moduledoc """
   Supermarket basket discounting
