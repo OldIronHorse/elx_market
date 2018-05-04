@@ -59,11 +59,11 @@ defmodule ElxMarketTest do
              ])
 
     assert discounted_items == [
-             {[
+             %DiscountedItem{items:[
                 %PricedItem{name: "shampoo", price: 2.0},
                 %PricedItem{name: "shampoo", price: 2.0},
                 %PricedItem{name: "shampoo", price: 2.0}
-              ], 2.0, 4.0}
+              ], saving: 2.0, price: 4.0}
            ]
   end
 
@@ -92,11 +92,11 @@ defmodule ElxMarketTest do
 
     assert discounted_items ==
              [
-               {[
+               %DiscountedItem{items:[
                   %PricedItem{name: "shampoo", price: 2.0},
                   %PricedItem{name: "shampoo", price: 2.0},
                   %PricedItem{name: "shampoo", price: 2.0}
-                ], 2.0, 4.0}
+                ], saving: 2.0, price: 4.0}
              ]
   end
 end

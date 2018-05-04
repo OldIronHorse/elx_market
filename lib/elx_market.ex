@@ -3,6 +3,11 @@ defmodule PricedItem do
   defstruct [:name, :price]
 end
 
+defmodule DiscountedItem do
+  @enforce_keys [:items, :saving, :price]
+  defscruct [:items, :saving, :price]
+end
+
 defmodule ElxMarket do
   @moduledoc """
   Supermarket basket discounting
