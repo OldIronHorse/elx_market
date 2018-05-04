@@ -12,13 +12,20 @@ defmodule Receipt do
   @enforce_keys [:items, :saving, :total]
   defstruct [:items, :saving, :total]
 
-  def make(basket, prices, _rules) do
-    priced_basket = ElxMarket.price_basket(basket, prices)
+  def make(basket, prices, rules) do
+    {full_priced_items, discounted_items} =
+      Enum.reduce(rules, {ElxMarket.price_basket(basket, prices), []}, fn rule,
+                                                                          {full_price_items,
+                                                                           discounted_items} ->
+        apply(rule, [full_price_items, discounted_items])
+      end)
+
+    discounted_basket = Enum.concat(full_priced_items, discounted_items)
 
     %Receipt{
-      items: priced_basket,
-      saving: 0,
-      total: Enum.reduce(priced_basket, 0, fn item, total -> total + item.price end)
+      items: discounted_basket,
+      saving: Enum.reduce(discounted_items, 0, fn item, saving -> saving + item.saving end),
+      total: Enum.reduce(discounted_basket, 0, fn item, total -> total + item.price end)
     }
   end
 end
@@ -43,6 +50,12 @@ defmodule ElxMarket do
        undiscounted,
        Enum.filter(full_price_items, fn item -> item.name != eligible_item_name end)
      ), discounts}
+  end
+
+  def rule_three_for_two(eligible_item_name) do
+    fn full_price_items, discounted_items ->
+      three_for_two(eligible_item_name, full_price_items, discounted_items)
+    end
   end
 
   def make_discounts_three_for_two(eligible_items, discounted_items)
