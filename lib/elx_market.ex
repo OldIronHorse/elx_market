@@ -1,18 +1,21 @@
 defmodule ElxMarket do
   @moduledoc """
-  Documentation for ElxMarket.
+  Supermarket basket discounting
   """
 
-  @doc """
-  Hello world.
+  def price_basket(basket, prices) do
+    price_basket(basket, prices, [])
+  end
 
-  ## Examples
+  def price_basket([], _prices, priced_items) do
+    Enum.reverse(priced_items)
+  end
 
-      iex> ElxMarket.hello
-      :world
+  def price_basket([item | basket], prices, priced_items) do
+    price_basket(basket, prices, [{item, prices[item]} | priced_items])
+  end
 
-  """
-  def hello do
-    :world
+  def three_for_two(eligible_item_name, full_price_items, discounted_items) do
+    {full_price_items, discounted_items}
   end
 end
