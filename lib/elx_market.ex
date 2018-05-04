@@ -3,8 +3,12 @@ defmodule ElxMarket do
   Supermarket basket discounting
   """
 
+  defmodule PricedItem do
+    defstruct name: nil, price: 0
+  end
+
   def price_basket(basket, prices) do
-    Enum.map(basket, fn item -> {item, prices[item]} end)
+    Enum.map(basket, fn item -> %PricedItem{name: item, price: prices[item]} end)
   end
 
   def three_for_two(eligible_item_name, full_price_items, discounted_items) do
