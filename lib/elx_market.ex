@@ -5,7 +5,7 @@ end
 
 defmodule DiscountedItem do
   @enforce_keys [:items, :saving, :price]
-  defscruct [:items, :saving, :price]
+  defstruct [:items, :saving, :price]
 end
 
 defmodule ElxMarket do
@@ -41,6 +41,10 @@ defmodule ElxMarket do
   end
 
   def make_three_for_two([free, paid1, paid2]) do
-    {[free, paid1, paid2], free.price, paid1.price + paid2.price}
+    %DiscountedItem{
+      items: [free, paid1, paid2],
+      saving: free.price,
+      price: paid1.price + paid2.price
+    }
   end
 end
