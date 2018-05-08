@@ -78,7 +78,93 @@ defmodule ElxMarketTest do
            }
   end
 
-  # TODO: make receipt
+  test "make receipt: multiple 3 for 2" do
+    prices = %{"soap" => 1.5, "shampoo" => 2.0, "toothpaste" => 0.8, "bannana" => 0.8}
+
+    basket = [
+      "soap",
+      "shampoo",
+      "shampoo",
+      "toothpaste",
+      "soap",
+      "shampoo",
+      "soap"
+    ]
+
+    receipt =
+      Receipt.make(basket, prices, [
+        ElxMarket.rule_three_for_two("shampoo"),
+        ElxMarket.rule_three_for_two("soap")
+      ])
+
+    assert receipt == %Receipt{
+             items: [
+               %PricedItem{name: "toothpaste", price: 0.8},
+               %DiscountedItem{
+                 items: [
+                   %PricedItem{name: "soap", price: 1.5},
+                   %PricedItem{name: "soap", price: 1.5},
+                   %PricedItem{name: "soap", price: 1.5}
+                 ],
+                 saving: 1.5,
+                 price: 3.0
+               },
+               %DiscountedItem{
+                 items: [
+                   %PricedItem{name: "shampoo", price: 2.0},
+                   %PricedItem{name: "shampoo", price: 2.0},
+                   %PricedItem{name: "shampoo", price: 2.0}
+                 ],
+                 saving: 2.0,
+                 price: 4.0
+               }
+             ],
+             saving: 3.5,
+             total: 7.8
+           }
+  end
+
+  test "reciept to string" do
+    assert Receipt.to_string(%Receipt{
+             items: [
+               %PricedItem{name: "toothpaste", price: 0.8},
+               %DiscountedItem{
+                 items: [
+                   %PricedItem{name: "soap", price: 1.5},
+                   %PricedItem{name: "soap", price: 1.5},
+                   %PricedItem{name: "soap", price: 1.5}
+                 ],
+                 saving: 1.5,
+                 price: 3.0
+               },
+               %DiscountedItem{
+                 items: [
+                   %PricedItem{name: "shampoo", price: 2.0},
+                   %PricedItem{name: "shampoo", price: 2.0},
+                   %PricedItem{name: "shampoo", price: 2.0}
+                 ],
+                 saving: 2.0,
+                 price: 4.0
+               }
+             ],
+             saving: 3.5,
+             total: 7.8
+           }) == """
+           toothpaste: £0.80
+           soap: £1.50
+           soap: £1.50
+           soap: £1.50
+           Multibuy saving: -£1.50
+           shampoo: £2.00
+           shampoo: £2.00
+           shampoo: £2.00
+           Multibuy saving: -£2.00
+
+           Total saving: -£3.50
+           Total: £7.80
+           """
+  end
+
   # TODO: make receipt string
 
   test "3 for 2: not triggered, no triplet" do

@@ -28,6 +28,35 @@ defmodule Receipt do
       total: Enum.reduce(discounted_basket, 0, fn item, total -> total + item.price end)
     }
   end
+
+  def to_string(receipt = %Receipt{}) do
+    Enum.concat(receipt.items, [
+      "\nTotal saving: -£#{to_gbp_string(receipt.saving)}",
+      "Total: £#{to_gbp_string(receipt.total)}\n"
+    ])
+    |> Enum.reduce([], fn item, lines -> item_to_lines(lines, item) end)
+    |> Enum.reverse()
+    |> Enum.reduce(fn line, text -> "#{text}\n#{line}" end)
+  end
+
+  def item_to_lines(lines, item = %PricedItem{}) do
+    ["#{item.name}: £#{to_gbp_string(item.price)}" | lines]
+  end
+
+  def item_to_lines(lines, item = %DiscountedItem{}) do
+    [
+      "Multibuy saving: -£#{to_gbp_string(item.saving)}"
+      | Enum.reduce(item.items, lines, fn i, l -> item_to_lines(l, i) end)
+    ]
+  end
+
+  def item_to_lines(lines, item) do
+    [item | lines]
+  end
+
+  def to_gbp_string(price) do
+    :io_lib.format("~.2f", [price]) |> Kernel.to_string()
+  end
 end
 
 defmodule ElxMarket do
