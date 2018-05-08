@@ -104,4 +104,33 @@ defmodule ElxMarket do
       price: paid1.price + paid2.price
     }
   end
+
+  def two_for(eligible_item_name, price, full_price_items, discounted_items) do
+    {eligible_items, ineligible_items} =
+      Enum.reduce(full_price_items, {[], []}, fn item, {e, ie} ->
+        case(item.name) do
+          ^eligible_item_name -> {[item | e], ie}
+          _ -> {e, [item | ie]}
+        end
+      end)
+
+    Enum.reduce(
+      Enum.chunk_every(eligible_items, 2),
+      {ineligible_items, discounted_items},
+      fn items, {fp, d} ->
+        case(length(items)) do
+          2 -> {fp, [make_discount_two_for(items, price) | d]}
+          _ -> {Enum.concat(fp, items), d}
+        end
+      end
+    )
+  end
+
+  def make_discount_two_for(items, price) do
+    %DiscountedItem{
+      items: items,
+      price: price,
+      saving: Enum.reduce(items, 0, fn i, total -> total + i.price end) - price
+    }
+  end
 end

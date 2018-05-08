@@ -165,8 +165,6 @@ defmodule ElxMarketTest do
            """
   end
 
-  # TODO: make receipt string
-
   test "3 for 2: not triggered, no triplet" do
     assert ElxMarket.three_for_two(
              "shampoo",
@@ -255,5 +253,50 @@ defmodule ElxMarketTest do
                  price: 4.0
                }
              ]
+  end
+
+  test "2 for: not triggered, not enough items" do
+    {full_priced, []} =
+      ElxMarket.two_for(
+        "toothpaste",
+        1.0,
+        [
+          %PricedItem{name: "soap", price: 1.5},
+          %PricedItem{name: "shampoo", price: 2.0},
+          %PricedItem{name: "shampoo", price: 2.0},
+          %PricedItem{name: "toothpaste", price: 0.8},
+          %PricedItem{name: "soap", price: 1.5}
+        ],
+        []
+      )
+
+    assert sort(full_priced) ==
+             sort([
+               %PricedItem{name: "soap", price: 1.5},
+               %PricedItem{name: "shampoo", price: 2.0},
+               %PricedItem{name: "shampoo", price: 2.0},
+               %PricedItem{name: "toothpaste", price: 0.8},
+               %PricedItem{name: "soap", price: 1.5}
+             ])
+  end
+
+  test "2 for: simplest" do
+    assert ElxMarket.two_for(
+             "soap",
+             2.0,
+             [%PricedItem{name: "soap", price: 1.5}, %PricedItem{name: "soap", price: 1.5}],
+             []
+           ) ==
+             {[],
+              [
+                %DiscountedItem{
+                  items: [
+                    %PricedItem{name: "soap", price: 1.5},
+                    %PricedItem{name: "soap", price: 1.5}
+                  ],
+                  saving: 1.0,
+                  price: 2.0
+                }
+              ]}
   end
 end
