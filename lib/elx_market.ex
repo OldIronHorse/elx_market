@@ -155,7 +155,7 @@ defmodule ElxMarket do
       end)
 
     make_discounts_cheapest_free(
-      Enum.sort_by(eligible_items, fn i -> i.price end),
+      Enum.sort_by(eligible_items, fn i -> i.price * -1 end),
       required_count,
       {ineligible_items, discounted_items}
     )
@@ -177,7 +177,7 @@ defmodule ElxMarket do
       ) do
     paid = Enum.take(eligible_items, 2)
     free = List.last(eligible_items)
-    [_last, rest] = Enum.reverse(Enum.drop(eligible_items, 2))
+    [_last | rest] = Enum.reverse(Enum.drop(eligible_items, 2))
 
     make_discounts_cheapest_free(
       Enum.reverse(rest),

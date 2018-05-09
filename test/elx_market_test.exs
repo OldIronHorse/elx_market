@@ -334,4 +334,46 @@ defmodule ElxMarketTest do
              %PricedItem{name: "toothpaste", price: 0.8}
            ]) == sort(full_price)
   end
+
+  test "cheapest free: triggered, preserve discounts" do
+    {full_price, discounted} =
+      ElxMarket.cheapest_free(
+        ["soap", "toothpaste", "shampoo"],
+        3,
+        [
+          %PricedItem{name: "soap", price: 1.5},
+          %PricedItem{name: "shampoo", price: 2.0},
+          %PricedItem{name: "shampoo", price: 2.0},
+          %PricedItem{name: "toothpaste", price: 0.8}
+        ],
+        [
+          %DiscountedItem{
+            items: [%PricedItem{name: "cheese", price: 1.0}],
+            saving: 0.25,
+            price: 0.75
+          }
+        ]
+      )
+
+    assert [
+             %PricedItem{name: "soap", price: 1.5}
+           ] == full_price
+
+    assert sort([
+             %DiscountedItem{
+               items: [
+                 %PricedItem{name: "toothpaste", price: 0.8},
+                 %PricedItem{name: "shampoo", price: 2.0},
+                 %PricedItem{name: "shampoo", price: 2.0}
+               ],
+               saving: 0.8,
+               price: 4
+             },
+             %DiscountedItem{
+               items: [%PricedItem{name: "cheese", price: 1.0}],
+               saving: 0.25,
+               price: 0.75
+             }
+           ]) == sort(discounted)
+  end
 end
