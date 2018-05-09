@@ -1,6 +1,10 @@
 defmodule PricedItem do
   @enforce_keys [:name, :price]
   defstruct [:name, :price]
+
+  def total(items) do
+    Enum.reduce(items, 0, fn item, total -> total + item.price end)
+  end
 end
 
 defmodule DiscountedItem do
@@ -132,5 +136,57 @@ defmodule ElxMarket do
       price: price,
       saving: Enum.reduce(items, 0, fn i, total -> total + i.price end) - price
     }
+  end
+
+  def rule_two_for(eligible_item_name, price) do
+    fn full_price_items, discounted_items ->
+      two_for(eligible_item_name, price, full_price_items, discounted_items)
+    end
+  end
+
+  def cheapest_free(eligible_item_names, required_count, full_price_items, discounted_items) do
+    {eligible_items, ineligible_items} =
+      Enum.reduce(full_price_items, {[], []}, fn item, {e, ie} ->
+        if Enum.member?(eligible_item_names, item.name) do
+          {[item | e], ie}
+        else
+          {e, [item | ie]}
+        end
+      end)
+
+    make_discounts_cheapest_free(
+      Enum.sort_by(eligible_items, fn i -> i.price end),
+      required_count,
+      {ineligible_items, discounted_items}
+    )
+  end
+
+  def make_discounts_cheapest_free(
+        eligible_items,
+        required_count,
+        {full_price_items, discounted_items}
+      )
+      when length(eligible_items) < required_count do
+    {Enum.concat(full_price_items, eligible_items), discounted_items}
+  end
+
+  def make_discounts_cheapest_free(
+        eligible_items,
+        required_count,
+        {ineligible_items, discounted_items}
+      ) do
+    paid = Enum.take(eligible_items, 2)
+    free = List.last(eligible_items)
+    [_last, rest] = Enum.reverse(Enum.drop(eligible_items, 2))
+
+    make_discounts_cheapest_free(
+      Enum.reverse(rest),
+      required_count,
+      {ineligible_items,
+       [
+         %DiscountedItem{items: [free | paid], saving: free.price, price: PricedItem.total(paid)}
+         | discounted_items
+       ]}
+    )
   end
 end
