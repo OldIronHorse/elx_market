@@ -1,6 +1,9 @@
 defmodule ElxMarketTest do
   use ExUnit.Case
   import Enum
+  alias ElxMarket.PricedItem, as: PricedItem
+  alias ElxMarket.DiscountedItem, as: DiscountedItem
+  alias ElxMarket.Receipt, as: Receipt
   doctest ElxMarket
 
   test "price a basket" do

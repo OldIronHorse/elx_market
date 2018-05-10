@@ -1,72 +1,72 @@
-defmodule PricedItem do
-  @enforce_keys [:name, :price]
-  defstruct [:name, :price]
-
-  def total(items) do
-    Enum.reduce(items, 0, fn item, total -> total + item.price end)
-  end
-end
-
-defmodule DiscountedItem do
-  @enforce_keys [:items, :saving, :price]
-  defstruct [:items, :saving, :price]
-end
-
-defmodule Receipt do
-  @enforce_keys [:items, :saving, :total]
-  defstruct [:items, :saving, :total]
-
-  def make(basket, prices, rules) do
-    {full_priced_items, discounted_items} =
-      Enum.reduce(rules, {ElxMarket.price_basket(basket, prices), []}, fn rule,
-                                                                          {full_price_items,
-                                                                           discounted_items} ->
-        apply(rule, [full_price_items, discounted_items])
-      end)
-
-    discounted_basket = Enum.concat(full_priced_items, discounted_items)
-
-    %Receipt{
-      items: discounted_basket,
-      saving: Enum.reduce(discounted_items, 0, fn item, saving -> saving + item.saving end),
-      total: Enum.reduce(discounted_basket, 0, fn item, total -> total + item.price end)
-    }
-  end
-
-  def to_string(receipt = %Receipt{}) do
-    Enum.concat(receipt.items, [
-      "\nTotal saving: -£#{to_gbp_string(receipt.saving)}",
-      "Total: £#{to_gbp_string(receipt.total)}\n"
-    ])
-    |> Enum.reduce([], fn item, lines -> item_to_lines(lines, item) end)
-    |> Enum.reverse()
-    |> Enum.reduce(fn line, text -> "#{text}\n#{line}" end)
-  end
-
-  def item_to_lines(lines, item = %PricedItem{}) do
-    ["#{item.name}: £#{to_gbp_string(item.price)}" | lines]
-  end
-
-  def item_to_lines(lines, item = %DiscountedItem{}) do
-    [
-      "Multibuy saving: -£#{to_gbp_string(item.saving)}"
-      | Enum.reduce(item.items, lines, fn i, l -> item_to_lines(l, i) end)
-    ]
-  end
-
-  def item_to_lines(lines, item) do
-    [item | lines]
-  end
-
-  def to_gbp_string(price) do
-    :io_lib.format("~.2f", [price]) |> Kernel.to_string()
-  end
-end
-
 defmodule ElxMarket do
   @moduledoc """
   Supermarket basket discounting
   """
+  defmodule PricedItem do
+    @enforce_keys [:name, :price]
+    defstruct [:name, :price]
+
+    def total(items) do
+      Enum.reduce(items, 0, fn item, total -> total + item.price end)
+    end
+  end
+
+  defmodule DiscountedItem do
+    @enforce_keys [:items, :saving, :price]
+    defstruct [:items, :saving, :price]
+  end
+
+  defmodule Receipt do
+    @enforce_keys [:items, :saving, :total]
+    defstruct [:items, :saving, :total]
+
+    def make(basket, prices, rules) do
+      {full_priced_items, discounted_items} =
+        Enum.reduce(rules, {ElxMarket.price_basket(basket, prices), []}, fn rule,
+                                                                            {full_price_items,
+                                                                             discounted_items} ->
+          apply(rule, [full_price_items, discounted_items])
+        end)
+
+      discounted_basket = Enum.concat(full_priced_items, discounted_items)
+
+      %Receipt{
+        items: discounted_basket,
+        saving: Enum.reduce(discounted_items, 0, fn item, saving -> saving + item.saving end),
+        total: Enum.reduce(discounted_basket, 0, fn item, total -> total + item.price end)
+      }
+    end
+
+    def to_string(receipt = %Receipt{}) do
+      Enum.concat(receipt.items, [
+        "\nTotal saving: -£#{to_gbp_string(receipt.saving)}",
+        "Total: £#{to_gbp_string(receipt.total)}\n"
+      ])
+      |> Enum.reduce([], fn item, lines -> item_to_lines(lines, item) end)
+      |> Enum.reverse()
+      |> Enum.reduce(fn line, text -> "#{text}\n#{line}" end)
+    end
+
+    def item_to_lines(lines, item = %PricedItem{}) do
+      ["#{item.name}: £#{to_gbp_string(item.price)}" | lines]
+    end
+
+    def item_to_lines(lines, item = %DiscountedItem{}) do
+      [
+        "Multibuy saving: -£#{to_gbp_string(item.saving)}"
+        | Enum.reduce(item.items, lines, fn i, l -> item_to_lines(l, i) end)
+      ]
+    end
+
+    def item_to_lines(lines, item) do
+      [item | lines]
+    end
+
+    def to_gbp_string(price) do
+      :io_lib.format("~.2f", [price]) |> Kernel.to_string()
+    end
+  end
+
 
   def price_basket(basket, prices) do
     Enum.map(basket, fn item -> %PricedItem{name: item, price: prices[item]} end)
