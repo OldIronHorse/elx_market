@@ -189,4 +189,49 @@ defmodule ElxMarket do
        ]}
     )
   end
+
+  def freebies(paid_name, paid_count, free_name, free_count, full_price_items, discounted_items) do
+    {ineligible_items, eligible_paid_items, eligible_free_items} =
+      Enum.reduce(full_price_items, {[], [], []}, fn item, {ineligible, paid, free} ->
+        case(item.name) do
+          ^paid_name -> {ineligible, [item | paid], free}
+          ^free_name -> {ineligible, paid, [item | free]}
+          _ -> {[item | ineligible], paid, free}
+        end
+      end)
+
+    make_discounts_freebies(
+      Enum.chunk_every(eligible_paid_items, paid_count),
+      Enum.chunk_every(eligible_free_items, free_count),
+      {ineligible_items, discounted_items}
+    )
+  end
+
+  def make_discounts_freebies([], free_chunks, {ineligible_items, discounted_items}) do
+    {Enum.concat([ineligible_items | free_chunks]), discounted_items}
+  end
+
+  def make_discounts_freebies(paid_chunks, [], {ineligible_items, discounted_items}) do
+    {Enum.concat([ineligible_items | paid_chunks]), discounted_items}
+  end
+
+  def make_discounts_freebies(
+        [paid | paid_rest],
+        [free | free_rest],
+        {ineligible_items, discounted_items}
+      ) do
+    make_discounts_freebies(
+      paid_rest,
+      free_rest,
+      {ineligible_items,
+       [
+         %DiscountedItem{
+           items: Enum.concat(paid, free),
+           saving: PricedItem.total(free),
+           price: PricedItem.total(paid)
+         }
+         | discounted_items
+       ]}
+    )
+  end
 end

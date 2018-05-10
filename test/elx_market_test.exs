@@ -376,4 +376,130 @@ defmodule ElxMarketTest do
              }
            ]) == sort(discounted)
   end
+
+  test "freebies: not triggered preserve discounts" do
+    basket = [
+      %PricedItem{name: "soap", price: 1.5},
+      %PricedItem{name: "shampoo", price: 2.0},
+      %PricedItem{name: "shampoo", price: 2.0},
+      %PricedItem{name: "toothpaste", price: 0.8}
+    ]
+
+    already_discounted = [
+      %DiscountedItem{items: [%PricedItem{name: "cheese", price: 1.0}], saving: 0.25, price: 0.75}
+    ]
+
+    {full_price, discounted} =
+      ElxMarket.freebies("conditioner", 3, "shampoo", 2, basket, already_discounted)
+
+    assert discounted == already_discounted
+    assert sort(basket) == sort(full_price)
+  end
+
+  test "freebies: triggered not fullfilled" do
+    basket = [
+      %PricedItem{name: "soap", price: 1.5},
+      %PricedItem{name: "conditioner", price: 2.5},
+      %PricedItem{name: "conditioner", price: 2.5},
+      %PricedItem{name: "conditioner", price: 2.5},
+      %PricedItem{name: "toothpaste", price: 0.8}
+    ]
+
+    already_discounted = [
+      %DiscountedItem{items: [%PricedItem{name: "cheese", price: 1.0}], saving: 0.25, price: 0.75}
+    ]
+
+    {full_price, discounted} =
+      ElxMarket.freebies("conditioner", 3, "shampoo", 2, basket, already_discounted)
+
+    assert discounted == already_discounted
+    assert sort(basket) == sort(full_price)
+  end
+
+  test "freebies: triggered partially fullfilled" do
+    basket = [
+      %PricedItem{name: "soap", price: 1.5},
+      %PricedItem{name: "conditioner", price: 2.5},
+      %PricedItem{name: "conditioner", price: 2.5},
+      %PricedItem{name: "shampoo", price: 2.0},
+      %PricedItem{name: "conditioner", price: 2.5},
+      %PricedItem{name: "toothpaste", price: 0.8}
+    ]
+
+    already_discounted = [
+      %DiscountedItem{items: [%PricedItem{name: "cheese", price: 1.0}], saving: 0.25, price: 0.75}
+    ]
+
+    {full_price, discounted} =
+      ElxMarket.freebies("conditioner", 3, "shampoo", 2, basket, already_discounted)
+
+    assert sort([
+             %DiscountedItem{
+               items: [%PricedItem{name: "cheese", price: 1.0}],
+               saving: 0.25,
+               price: 0.75
+             },
+             %DiscountedItem{
+               items: [
+                 %PricedItem{name: "conditioner", price: 2.5},
+                 %PricedItem{name: "conditioner", price: 2.5},
+                 %PricedItem{name: "conditioner", price: 2.5},
+                 %PricedItem{name: "shampoo", price: 2.0}
+               ],
+               saving: 2.0,
+               price: 7.5
+             }
+           ]) == sort(discounted)
+
+    assert sort([
+             %PricedItem{name: "soap", price: 1.5},
+             %PricedItem{name: "toothpaste", price: 0.8}
+           ]) == sort(full_price)
+  end
+
+  test "freebies: triggered, fullfilled" do
+    basket = [
+      %PricedItem{name: "soap", price: 1.5},
+      %PricedItem{name: "shampoo", price: 2.0},
+      %PricedItem{name: "conditioner", price: 2.5},
+      %PricedItem{name: "conditioner", price: 2.5},
+      %PricedItem{name: "shampoo", price: 2.0},
+      %PricedItem{name: "conditioner", price: 2.5},
+      %PricedItem{name: "shampoo", price: 2.0},
+      %PricedItem{name: "toothpaste", price: 0.8}
+    ]
+
+    already_discounted = [
+      %DiscountedItem{items: [%PricedItem{name: "cheese", price: 1.0}], saving: 0.25, price: 0.75}
+    ]
+
+    {full_price, discounted} =
+      ElxMarket.freebies("conditioner", 3, "shampoo", 2, basket, already_discounted)
+
+    assert sort(discounted) ==
+             sort([
+               %DiscountedItem{
+                 items: [%PricedItem{name: "cheese", price: 1.0}],
+                 saving: 0.25,
+                 price: 0.75
+               },
+               %DiscountedItem{
+                 items: [
+                   %PricedItem{name: "conditioner", price: 2.5},
+                   %PricedItem{name: "conditioner", price: 2.5},
+                   %PricedItem{name: "conditioner", price: 2.5},
+                   %PricedItem{name: "shampoo", price: 2.0},
+                   %PricedItem{name: "shampoo", price: 2.0}
+                 ],
+                 saving: 4.0,
+                 price: 7.5
+               }
+             ])
+
+    assert sort([
+             %PricedItem{name: "soap", price: 1.5},
+             %PricedItem{name: "shampoo", price: 2.0},
+             %PricedItem{name: "toothpaste", price: 0.8}
+           ]) == sort(full_price)
+  end
 end
