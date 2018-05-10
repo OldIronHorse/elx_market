@@ -1,6 +1,7 @@
 defmodule ElxMarketTest do
   use ExUnit.Case
   import Enum, only: [sort: 1]
+  import ElxMarket
   alias ElxMarket.PricedItem, as: PricedItem
   alias ElxMarket.DiscountedItem, as: DiscountedItem
   alias ElxMarket.Receipt, as: Receipt
@@ -9,7 +10,7 @@ defmodule ElxMarketTest do
   test "price a basket" do
     prices = %{"soap" => 1.5, "shampoo" => 2.0, "toothpaste" => 0.8, "bannana" => 0.8}
 
-    assert ElxMarket.price_basket(["soap", "shampoo", "shampoo", "toothpaste", "soap"], prices) ==
+    assert price_basket(["soap", "shampoo", "shampoo", "toothpaste", "soap"], prices) ==
              [
                %PricedItem{name: "soap", price: 1.5},
                %PricedItem{name: "shampoo", price: 2.0},
@@ -59,7 +60,7 @@ defmodule ElxMarketTest do
       "soap"
     ]
 
-    receipt = Receipt.make(basket, prices, [ElxMarket.rule_three_for_two("shampoo")])
+    receipt = Receipt.make(basket, prices, [rule_three_for_two("shampoo")])
 
     assert receipt == %Receipt{
              items: [
@@ -96,8 +97,8 @@ defmodule ElxMarketTest do
 
     receipt =
       Receipt.make(basket, prices, [
-        ElxMarket.rule_three_for_two("shampoo"),
-        ElxMarket.rule_three_for_two("soap")
+        rule_three_for_two("shampoo"),
+        rule_three_for_two("soap")
       ])
 
     assert receipt == %Receipt{
@@ -169,7 +170,7 @@ defmodule ElxMarketTest do
   end
 
   test "3 for 2: not triggered, no triplet" do
-    assert ElxMarket.three_for_two(
+    assert three_for_two(
              "shampoo",
              sort([
                %PricedItem{name: "soap", price: 1.5},
@@ -199,7 +200,7 @@ defmodule ElxMarketTest do
       %PricedItem{name: "soap", price: 1.5}
     ]
 
-    {full_price_items, discounted_items} = ElxMarket.three_for_two("shampoo", priced_basket, [])
+    {full_price_items, discounted_items} = three_for_two("shampoo", priced_basket, [])
 
     assert sort(full_price_items) ==
              sort([
@@ -233,7 +234,7 @@ defmodule ElxMarketTest do
       %PricedItem{name: "shampoo", price: 2.0}
     ]
 
-    {full_price_items, discounted_items} = ElxMarket.three_for_two("shampoo", priced_basket, [])
+    {full_price_items, discounted_items} = three_for_two("shampoo", priced_basket, [])
 
     assert sort(full_price_items) ==
              sort([
@@ -260,7 +261,7 @@ defmodule ElxMarketTest do
 
   test "2 for: not triggered, not enough items" do
     {full_priced, []} =
-      ElxMarket.two_for(
+      two_for(
         "toothpaste",
         1.0,
         [
@@ -284,7 +285,7 @@ defmodule ElxMarketTest do
   end
 
   test "2 for: simplest" do
-    assert ElxMarket.two_for(
+    assert two_for(
              "soap",
              2.0,
              [%PricedItem{name: "soap", price: 1.5}, %PricedItem{name: "soap", price: 1.5}],
@@ -312,7 +313,7 @@ defmodule ElxMarketTest do
          price: 0.75
        }
      ]} =
-      ElxMarket.cheapest_free(
+      cheapest_free(
         ["soap", "toothepaste", "conditioner"],
         3,
         [
@@ -340,7 +341,7 @@ defmodule ElxMarketTest do
 
   test "cheapest free: triggered, preserve discounts" do
     {full_price, discounted} =
-      ElxMarket.cheapest_free(
+      cheapest_free(
         ["soap", "toothpaste", "shampoo"],
         3,
         [
@@ -393,7 +394,7 @@ defmodule ElxMarketTest do
     ]
 
     {full_price, discounted} =
-      ElxMarket.freebies("conditioner", 3, "shampoo", 2, basket, already_discounted)
+      freebies("conditioner", 3, "shampoo", 2, basket, already_discounted)
 
     assert discounted == already_discounted
     assert sort(basket) == sort(full_price)
@@ -413,7 +414,7 @@ defmodule ElxMarketTest do
     ]
 
     {full_price, discounted} =
-      ElxMarket.freebies("conditioner", 3, "shampoo", 2, basket, already_discounted)
+      freebies("conditioner", 3, "shampoo", 2, basket, already_discounted)
 
     assert discounted == already_discounted
     assert sort(basket) == sort(full_price)
@@ -434,7 +435,7 @@ defmodule ElxMarketTest do
     ]
 
     {full_price, discounted} =
-      ElxMarket.freebies("conditioner", 3, "shampoo", 2, basket, already_discounted)
+      freebies("conditioner", 3, "shampoo", 2, basket, already_discounted)
 
     assert sort([
              %DiscountedItem{
@@ -477,7 +478,7 @@ defmodule ElxMarketTest do
     ]
 
     {full_price, discounted} =
-      ElxMarket.freebies("conditioner", 3, "shampoo", 2, basket, already_discounted)
+      freebies("conditioner", 3, "shampoo", 2, basket, already_discounted)
 
     assert sort(discounted) ==
              sort([
