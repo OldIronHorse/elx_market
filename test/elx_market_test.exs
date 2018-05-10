@@ -155,14 +155,16 @@ defmodule ElxMarketTest do
              total: 7.8
            }) == """
            toothpaste: £0.80
+           Multibuy:
            soap: £1.50
            soap: £1.50
            soap: £1.50
-           Multibuy saving: -£1.50
+            saving: -£1.50
+           Multibuy:
            shampoo: £2.00
            shampoo: £2.00
            shampoo: £2.00
-           Multibuy saving: -£2.00
+            saving: -£2.00
 
            Total saving: -£3.50
            Total: £7.80

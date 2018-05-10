@@ -53,8 +53,8 @@ defmodule ElxMarket do
 
     def item_to_lines(lines, item = %DiscountedItem{}) do
       [
-        "Multibuy saving: -£#{to_gbp_string(item.saving)}"
-        | Enum.reduce(item.items, lines, fn i, l -> item_to_lines(l, i) end)
+        " saving: -£#{to_gbp_string(item.saving)}"
+        | Enum.reduce(["Multibuy:" | item.items], lines, fn i, l -> item_to_lines(l, i) end)
       ]
     end
 
