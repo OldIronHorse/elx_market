@@ -67,7 +67,6 @@ defmodule ElxMarket do
     end
   end
 
-
   def price_basket(basket, prices) do
     Enum.map(basket, fn item -> %PricedItem{name: item, price: prices[item]} end)
   end
