@@ -1,6 +1,6 @@
 defmodule ElxMarketTest do
   use ExUnit.Case
-  import Enum, only: [sort:, 1]
+  import Enum, only: [sort: 1]
   alias ElxMarket.PricedItem, as: PricedItem
   alias ElxMarket.DiscountedItem, as: DiscountedItem
   alias ElxMarket.Receipt, as: Receipt
